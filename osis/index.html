@@ -7,7 +7,7 @@
   
   <!-- Apple Typography / Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://api.rifaldo.my.id/lib/notification.js"></script>
+  
 
   <style>
     :root {
@@ -78,6 +78,7 @@
       border: none;
       border-radius: 0px;
       transition: all 0.6s ease-in-out;
+      cursor: pointer;
     }
 
     header > button:hover {
@@ -171,6 +172,12 @@
       transform: translateY(-6px);
       box-shadow: var(--shadow-hover);
       border-color: var(--border-hover);
+    }
+
+    /* Indikator Kartu Sedang Diputar */
+    .card.playing {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0, 113, 227, 0.2);
     }
 
     .player {
@@ -295,7 +302,7 @@
 
   <div class="control-deck">
     <div class="tabs">
-      <button class="tab-btn active" onclick="changeMode('id')" id="btn-id">Indo</button>
+      <button class="tab-btn active" onclick="changeMode('id')" id="btn-id">Indonesia</button>
       <button class="tab-btn" onclick="changeMode('en')" id="btn-en">Inggris</button>
       <button class="tab-btn" onclick="changeMode('all')" id="btn-all">Semua</button>
     </div>
@@ -310,14 +317,19 @@
   </section>
 </div>
 
+<script src="https://api.rifaldo.my.id/lib/notification/script.js"></script>
 <script>
   function pelajariLebihLanjut() {
-    ly.info(`Website ini di buat sebagai salah satu program OSIS, dengan tujuan meleraksasi pikiran pelajar.\n\nDi buat oleh: Rifaldo Saputra\nWebsite: rifaldo.my.id`)
+    lyn.info({
+      Title: "Tentang Website",
+      Mess: "Website ini di buat sebagai salah satu program OSIS, dengan tujuan meleraksasi pikiran pelajar.\n\nDi buat oleh: Rifaldo Saputra\nWebsite: rifaldo.my.id"
+      });
   }
   
   let rawData = { id: [], en: [] };
   let currentMode = 'id';
   let activeData = [];
+  let debounceTimer;
 
   async function init() {
     try {
@@ -326,7 +338,6 @@
         fetch('./playlist-en.json').then(r => r.json())
       ]);
       
-      // Berikan tanda bahasa masing-masing data sebelum digabung
       rawData.id = (Array.isArray(resId) ? resId : [resId]).map(item => ({ ...item, lang: 'id' }));
       rawData.en = (Array.isArray(resEn) ? resEn : [resEn]).map(item => ({ ...item, lang: 'en' }));
       
@@ -349,7 +360,10 @@
   }
 
   function filterMusic() {
-    render();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      render();
+    }, 300);
   }
 
   async function getYouTubeTitle(videoId) {
@@ -368,22 +382,25 @@
     if (currentMode === 'en') list = rawData.en;
     if (currentMode === 'all') list = [...rawData.id, ...rawData.en];
     
-    // Filter URL kosong
     list = list.filter(item => item.url && item.url.trim() !== "");
 
-    const searchQuery = document.getElementById('search').value.toLowerCase();
+    const searchQuery = document.getElementById('search').value.toLowerCase().trim();
 
-    // Acak seluruh list berdasarkan tanggal (seed harian) untuk semua mode
-    list = seededShuffle(list);
-
-    // Jika mode ID atau EN dan sedang tidak melakukan pencarian, batasi ambil maksimal 2 lagu
-    if (currentMode !== 'all' && !searchQuery) {
-      list = list.slice(0, 2);
+    // 1. Filter pencarian dijalankan SEBELUM pembatasan jumlah item
+    if (searchQuery) {
+      list = list.filter(item => {
+        const titleMatch = item.title && item.title.toLowerCase().includes(searchQuery);
+        const idMatch = ambilId(item.url).toLowerCase().includes(searchQuery);
+        return titleMatch || idMatch;
+      });
     }
 
-    // Filter berdasarkan search query jika ada ketikan
-    if (searchQuery) {
-      list = list.filter(item => (item.title && item.title.toLowerCase().includes(searchQuery)) || ambilId(item.url).includes(searchQuery));
+    // 2. Acak seluruh list berdasarkan seed harian
+    list = seededShuffle(list);
+
+    // 3. Batasi maksimal 2 lagu jika bukan mode 'all' dan sedang tidak mencari
+    if (currentMode !== 'all' && !searchQuery) {
+      list = list.slice(0, 2);
     }
 
     activeData = list;
@@ -396,14 +413,14 @@
 
     container.innerHTML = "";
 
-    // Render kerangka kartu
+    // Render kerangka kartu dengan ID unik
     activeData.forEach((item, i) => {
       const vid = ambilId(item.url);
       const defaultTitle = item.title && item.title !== "" ? item.title : "Memuat judul...";
       const langBadgeClass = item.lang || 'id';
       
       container.innerHTML += `
-        <div class="card">
+        <div class="card" id="card-${i}">
           <div class="player" id="p-${i}">
             ${vid ? `<img class="thumbnail" src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" alt="Thumbnail">` : ''}
           </div>
@@ -426,6 +443,7 @@
       const vid = ambilId(item.url);
       if (vid && (!item.title || item.title === "")) {
         getYouTubeTitle(vid).then(title => {
+          item.title = title; // Simpan ke objek data agar pencarian mendeteksi judul ter-fetch
           const titleEl = document.getElementById(`title-${i}`);
           if (titleEl) titleEl.textContent = title;
         });
@@ -439,6 +457,15 @@
       return;
     }
 
+    lyn.dynamicIsland({
+      Status: "active",
+      Mess: "Memutar musik",
+      Label: "music"
+    });
+
+    // Hapus efek playing dari semua kartu
+    document.querySelectorAll('.card').forEach(el => el.classList.remove('playing'));
+
     // Reset player lain ke thumbnail awal
     activeData.forEach((item, idx) => {
       const pEl = document.getElementById(`p-${idx}`);
@@ -447,6 +474,12 @@
         pEl.innerHTML = `<img class="thumbnail" src="https://img.youtube.com/vi/${vId}/hqdefault.jpg" alt="Thumbnail">`;
       }
     });
+
+    // Berikan efek aktif (playing) ke kartu yang dipilih
+    const selectedCard = document.getElementById(`card-${i}`);
+    if (selectedCard) {
+      selectedCard.classList.add('playing');
+    }
 
     // Jalankan iframe pemutar video
     document.getElementById(`p-${i}`).innerHTML = `
