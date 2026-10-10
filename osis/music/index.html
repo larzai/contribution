@@ -1,0 +1,1309 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player OSIS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --surface: #fff;
+      --surface-glass: rgba(255,255,255,.85);
+      --border: rgba(0,0,0,.08);
+      --border-hover: rgba(0,0,0,.15);
+      --text-main: #1d1d1f;
+      --text-muted: #86868b;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --danger: #ff3b30;
+      --shadow-sm: 0 4px 20px rgba(0,0,0,.03);
+      --shadow-hover: 0 16px 40px rgba(0,0,0,.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, rgba(0,113,227,.04), transparent 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 980px;
+    }
+
+    header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: .95rem;
+      color: var(--text-muted);
+    }
+
+    header > button {
+      margin: 15px;
+      font-size: .95rem;
+      color: #fff;
+      background: var(--text-main);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 0;
+      transition: all .4s ease;
+      cursor: pointer;
+    }
+
+    header > button:hover {
+      border-radius: 20px;
+    }
+
+    .control-deck {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .tabs-shell {
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-radius: 980px;
+    }
+
+    .tabs-shell::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 3px;
+      width: max-content;
+      max-width: 100%;
+      background: rgba(0,0,0,.04);
+      padding: 4px;
+      border-radius: 980px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      white-space: nowrap;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 9px 16px;
+      font-size: .82rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 980px;
+      transition: all .3s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text-main);
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+
+    .tab-btn.special-tab {
+      color: #9333ea;
+    }
+
+    .tab-btn.special-tab.available {
+      box-shadow: 0 0 12px rgba(168,85,247,.2);
+    }
+
+    .tab-btn.special-tab.available::before {
+      content: "";
+      position: absolute;
+      z-index: -2;
+      width: 180%;
+      height: 300%;
+      left: -40%;
+      top: -100%;
+      background: conic-gradient(transparent, transparent 65%, #a855f7, #ec4899, transparent);
+      animation: specialGlow 3s linear infinite;
+    }
+
+    .tab-btn.special-tab.available::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      z-index: -1;
+      background: #fff;
+      border-radius: inherit;
+    }
+
+    .tab-btn.special-tab.unavailable {
+      opacity: .4;
+    }
+
+    @keyframes specialGlow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .search-wrapper {
+      flex: 1;
+      max-width: 320px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 11px 18px;
+      font-size: .9rem;
+      border-radius: 980px;
+      outline: none;
+      transition: all .25s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0,113,227,.12), var(--shadow-sm);
+    }
+
+    .special-status {
+      display: none;
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(168,85,247,.16);
+      border-radius: 16px;
+      color: var(--text-muted);
+      font-size: .8rem;
+      line-height: 1.7;
+    }
+
+    .special-status.visible {
+      display: block;
+    }
+
+    .special-status strong {
+      color: #9333ea;
+    }
+
+    #music {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      min-width: 0;
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-hover);
+    }
+
+    .card.playing {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0,113,227,.2);
+    }
+
+    .card.special-card {
+      border-color: rgba(168,85,247,.2);
+    }
+
+    .card.special-card.playing {
+      border: 2px solid #a855f7;
+      box-shadow: 0 0 24px rgba(168,85,247,.22);
+    }
+
+    .player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #e8e8ed;
+      overflow: hidden;
+    }
+
+    .thumbnail {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .info {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    .info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid rgba(0,0,0,.05);
+      padding-top: 14px;
+    }
+
+    .badge-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .index-tag {
+      font-size: .75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .lang-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(0,0,0,.05);
+      color: var(--text-muted);
+    }
+
+    .lang-badge.id {
+      background: rgba(239,68,68,.1);
+      color: #dc2626;
+    }
+
+    .lang-badge.en {
+      background: rgba(59,130,246,.1);
+      color: #2563eb;
+    }
+
+    .lang-badge.special {
+      background: rgba(168,85,247,.12);
+      color: #9333ea;
+    }
+
+    .play-btn {
+      flex-shrink: 0;
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 980px;
+      transition: background .2s ease, transform .1s ease, box-shadow .2s ease;
+    }
+
+    .play-btn:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(0,113,227,.3);
+    }
+
+    .play-btn:active {
+      transform: scale(.96);
+    }
+
+    .play-btn.special-play {
+      background: linear-gradient(110deg, #9333ea, #ec4899);
+    }
+
+    .play-btn.denied {
+      background: var(--danger);
+      box-shadow: 0 0 12px rgba(255,59,48,.2);
+    }
+
+    .status-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: .95rem;
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .floating-player {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 300px;
+      max-width: calc(100vw - 36px);
+      padding: 5px;
+      background: #ffffff50;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-radius: 23px;
+      overflow: hidden;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px) scale(.94);
+      transition: opacity .28s ease, transform .35s ease, visibility .28s ease, width .4s ease;
+    }
+
+    .floating-player.is-large {
+      width: 450px;
+    }
+
+    .floating-player.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .floating-player button {
+      outline: none;
+      border: 1px solid rgba(255,255,255,.4);
+      background: rgba(255,255,255,.3);
+      font-size: 20px;
+      border-radius: 50%;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s ease;
+    }
+
+    .floating-player button:hover {
+      background: rgba(255,255,255,.4);
+      transform: scale(1.07);
+    }
+
+    .floating-video {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(0,0,0,.82);
+      border-radius: 18px;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .floating-video iframe,
+    .floating-video > div {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .floating-info {
+      width: 100%;
+      position: relative;
+      z-index: 2;
+      margin: 4px 3px 0;
+      padding: 9px 10px 7px;
+      color: rgba(20,20,25,.82);
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 36px 14px;
+      }
+
+      header {
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .control-deck {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .tabs-shell {
+        width: 100%;
+      }
+
+      .tabs {
+        width: max-content;
+        max-width: none;
+      }
+
+      .tab-btn {
+        padding: 10px 12px;
+        font-size: .75rem;
+      }
+
+      .search-wrapper {
+        max-width: 100%;
+      }
+
+      #music {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .floating-player {
+        top: 12px;
+        right: 12px;
+        width: 228px;
+        max-width: calc(100vw - 24px);
+        padding: 4px;
+        border-radius: 19px;
+      }
+
+      .floating-player.is-large {
+        width: min(450px, calc(100vw - 24px));
+      }
+
+      .floating-video {
+        border-radius: 15px;
+      }
+
+      .floating-info {
+        font-size: .65rem;
+        padding: 7px 8px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="floating-player" class="floating-player">
+    <div id="floating-video" class="floating-video"></div>
+    <div id="floating-info" class="floating-info">Tidak ada musik yang diputar.</div>
+    <button id="sizeFloatingButton" type="button" aria-label="Ubah ukuran pemutar">⤢</button>
+  </div>
+
+  <div class="wrapper">
+    <header>
+      <h1>Music Player OSIS</h1>
+      <div class="subtitle">Koleksi audio pilihan institusi terkurasi.</div>
+      <button type="button" onclick="pelajariLebihLanjut()">Pelajari lebih lanjut</button>
+    </header>
+
+    <div class="control-deck">
+      <div class="tabs-shell" id="tabsShell">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="changeMode('id')" id="btn-id">Indonesia</button>
+          <button class="tab-btn" onclick="changeMode('en')" id="btn-en">Inggris</button>
+          <button class="tab-btn" onclick="changeMode('all')" id="btn-all">Semua</button>
+          <button class="tab-btn special-tab unavailable" onclick="changeMode('special')" id="btn-special">✦ Special</button>
+        </div>
+      </div>
+
+      <div class="search-wrapper">
+        <input type="text" id="search" placeholder="Cari lagu..." autocomplete="off">
+      </div>
+    </div>
+
+    <div class="special-status" id="special-status"></div>
+
+    <section id="music">
+      <div class="status-msg">Memuat data...</div>
+    </section>
+  </div>
+
+  <script>
+    const SPECIAL_PERIOD = 14 * 24 * 60 * 60 * 1000;
+    const SPECIAL_STORAGE_KEY = 'osis-special-schedule-v2';
+
+    let rawData = {
+      id: [],
+      en: [],
+      special: []
+    };
+
+    let currentMode = 'id';
+    let activeData = [];
+    let playbackQueue = [];
+    let playbackQueueIndex = -1;
+    let currentVideoId = '';
+    let ytPlayer = null;
+    let ytApiReady = false;
+    let pendingVideo = null;
+    let playerGeneration = 0;
+    let specialState;
+    let debounceTimer;
+
+    window.onYouTubeIframeAPIReady = function() {
+      ytApiReady = true;
+      processPendingVideo();
+    };
+
+    (function loadYouTubeAPI() {
+      if (window.YT && window.YT.Player) {
+        ytApiReady = true;
+        return;
+      }
+
+      if (document.querySelector('script[data-youtube-iframe-api]')) return;
+
+      const script = document.createElement('script');
+      script.src = 'https://www.youtube.com/iframe_api';
+      script.async = true;
+      script.dataset.youtubeIframeApi = 'true';
+      document.head.appendChild(script);
+    })();
+
+    function notify(options) {
+      if (typeof lyp !== 'undefined' && typeof lyp.info === 'function') {
+        lyp.info(options);
+      } else if (typeof lyn !== 'undefined' && typeof lyn.info === 'function') {
+        lyn.info(options);
+      }
+    }
+
+    function pelajariLebihLanjut() {
+      if (typeof lyp !== 'undefined' && typeof lyp.info === 'function') {
+        lyp.info({
+          Title: 'Tentang Website',
+          Mess: 'Website ini dibuat sebagai salah satu program OSIS, dengan tujuan merelaksasi pikiran pelajar.\n\nDibuat oleh: Rifaldo Saputra\nWebsite: rifaldo.my.id'
+        });
+      } else if (typeof lyn !== 'undefined' && typeof lyn.info === 'function') {
+        lyn.info({
+          Title: 'Tentang Website',
+          Mess: 'Website ini dibuat sebagai salah satu program OSIS, dengan tujuan merelaksasi pikiran pelajar.\n\nDibuat oleh: Rifaldo Saputra\nWebsite: rifaldo.my.id'
+        });
+      }
+    }
+
+    function getLocalMidnight(timestamp = Date.now()) {
+      const date = new Date(timestamp);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    function createSpecialState(start = getLocalMidnight(), forceToday = false) {
+      const days = Array.from({ length: 14 }, (_, i) => i);
+
+      for (let i = days.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [days[i], days[j]] = [days[j], days[i]];
+      }
+
+      let specialDays = days.slice(0, 2);
+
+      if (forceToday) {
+        const todayIndex = Math.max(
+          0,
+          Math.min(13, Math.floor((getLocalMidnight() - start) / 86400000))
+        );
+
+        const otherDay = Math.floor(Math.random() * 13);
+        const adjustedOtherDay = otherDay >= todayIndex ? otherDay + 1 : otherDay;
+
+        specialDays = [todayIndex, adjustedOtherDay];
+      }
+
+      return {
+        cycleStart: start,
+        cycleEnd: start + SPECIAL_PERIOD,
+        specialDays: [...new Set(specialDays)].sort((a, b) => a - b),
+        testTodayApplied: forceToday
+      };
+    }
+
+    function saveSpecialState() {
+      try {
+        localStorage.setItem(SPECIAL_STORAGE_KEY, JSON.stringify(specialState));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function loadSpecialState() {
+      const now = Date.now();
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(SPECIAL_STORAGE_KEY));
+
+        if (
+          saved &&
+          Number.isFinite(saved.cycleStart) &&
+          Number.isFinite(saved.cycleEnd) &&
+          saved.cycleEnd - saved.cycleStart === SPECIAL_PERIOD &&
+          Array.isArray(saved.specialDays) &&
+          saved.specialDays.length === 2 &&
+          saved.specialDays.every(day => Number.isInteger(day) && day >= 0 && day < 14) &&
+          saved.specialDays[0] !== saved.specialDays[1] &&
+          now >= saved.cycleStart &&
+          now < saved.cycleEnd
+        ) {
+          specialState = saved;
+
+          if (!specialState.testTodayApplied) {
+            const todayIndex = Math.max(
+              0,
+              Math.min(13, Math.floor((getLocalMidnight() - specialState.cycleStart) / 86400000))
+            );
+
+            const otherDay = Math.floor(Math.random() * 13);
+            const adjustedOtherDay = otherDay >= todayIndex ? otherDay + 1 : otherDay;
+
+            specialState.specialDays = [todayIndex, adjustedOtherDay].sort((a, b) => a - b);
+            specialState.testTodayApplied = true;
+            saveSpecialState();
+          }
+
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      specialState = createSpecialState(getLocalMidnight(), true);
+      saveSpecialState();
+    }
+
+    function refreshSpecialCycle() {
+      const now = Date.now();
+
+      if (now >= specialState.cycleEnd) {
+        const elapsedPeriods = Math.floor(
+          (now - specialState.cycleStart) / SPECIAL_PERIOD
+        );
+
+        const nextStart = specialState.cycleStart + elapsedPeriods * SPECIAL_PERIOD;
+        specialState = createSpecialState(nextStart, false);
+        saveSpecialState();
+      }
+    }
+
+    function getSpecialAvailability() {
+      refreshSpecialCycle();
+
+      const today = getLocalMidnight();
+      const dayIndex = Math.floor(
+        (today - specialState.cycleStart) / 86400000
+      );
+
+      return {
+        allowed: dayIndex >= 0 &&
+          dayIndex < 14 &&
+          specialState.specialDays.includes(dayIndex),
+        dayIndex,
+        specialDays: specialState.specialDays
+      };
+    }
+
+    function formatDateTime(timestamp) {
+      return new Intl.DateTimeFormat('id-ID', {
+        dateStyle: 'full'
+      }).format(new Date(timestamp));
+    }
+
+    function formatSpecialDate(dayIndex) {
+      return formatDateTime(specialState.cycleStart + dayIndex * 86400000);
+    }
+
+    function updateSpecialUI() {
+      if (!specialState) return;
+
+      const button = document.getElementById('btn-special');
+      const status = document.getElementById('special-status');
+      const availability = getSpecialAvailability();
+
+      button.classList.toggle('available', availability.allowed);
+      button.classList.toggle('unavailable', !availability.allowed);
+
+      if (availability.allowed) {
+        status.innerHTML = '<strong>✦ Special terbuka hari ini!</strong><br>Putar lagu Special sepuasnya selama hari ini.';
+      } else {
+        const dates = specialState.specialDays.map(formatSpecialDate).join(' dan ');
+        status.innerHTML = `<strong>✦ Special belum tersedia</strong><br>Jadwal acak periode ini: ${dates}.`;
+      }
+
+      status.classList.toggle('visible', currentMode === 'special');
+    }
+
+    async function fetchPlaylist(path) {
+      const response = await fetch(path);
+
+      if (!response.ok) {
+        throw new Error(`Gagal memuat ${path}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [data];
+    }
+
+    async function init() {
+      loadSpecialState();
+
+      try {
+        const [resId, resEn, resSpecial] = await Promise.all([
+          fetchPlaylist('./playlist-id.json'),
+          fetchPlaylist('./playlist-en.json'),
+          fetchPlaylist('./special.json')
+        ]);
+
+        rawData.id = resId.map(item => ({ ...item, lang: 'id', title: item.title || '' }));
+        rawData.en = resEn.map(item => ({ ...item, lang: 'en', title: item.title || '' }));
+        rawData.special = resSpecial.map(item => ({ ...item, lang: 'special', title: item.title || '' }));
+
+        updateSpecialUI();
+        changeMode('id');
+      } catch (error) {
+        console.error(error);
+
+        document.getElementById('music').innerHTML = `
+          <div class="status-msg" style="color:#ff3b30;">
+            Gagal memuat playlist. Periksa playlist-id.json, playlist-en.json, dan special.json.
+          </div>
+        `;
+      }
+    }
+
+    function changeMode(mode) {
+      if (!['id', 'en', 'all', 'special'].includes(mode)) return;
+
+      currentMode = mode;
+
+      document.querySelectorAll('.tab-btn').forEach(button => {
+        button.classList.toggle('active', button.id === `btn-${mode}`);
+      });
+
+      document.getElementById('search').value = '';
+      updateSpecialUI();
+      render();
+
+      const activeButton = document.getElementById(`btn-${mode}`);
+
+      if (activeButton && window.innerWidth <= 640) {
+        activeButton.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        });
+      }
+    }
+
+    function filterMusic() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(render, 250);
+    }
+
+    document.getElementById('search').addEventListener('input', filterMusic);
+
+    async function getYouTubeTitle(videoId) {
+      try {
+        const response = await fetch(
+          `https://noembed.com/embed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`
+        );
+
+        if (!response.ok) throw new Error('Gagal mengambil judul');
+
+        const data = await response.json();
+        return data.title || 'Unknown Title';
+      } catch (error) {
+        return 'Unknown Title';
+      }
+    }
+
+    function setThumbnail(img, videoId) {
+      const sources = [
+        `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+        `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`,
+        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+        `https://i.ytimg.com/vi/${videoId}/default.jpg`,
+        `https://i.ytimg.com/vi_webp/${videoId}/hqdefault.webp`,
+        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+      ];
+
+      let index = 0;
+      let finished = false;
+
+      img.onerror = () => {
+        if (finished) return;
+
+        index++;
+
+        if (index < sources.length) {
+          img.src = sources[index];
+        } else {
+          finished = true;
+          img.onerror = null;
+          img.onload = null;
+          img.alt = 'Thumbnail tidak tersedia';
+        }
+      };
+
+      img.onload = () => {
+        if (finished) return;
+
+        if (img.naturalWidth <= 120 && index < sources.length - 1) {
+          index++;
+          img.src = sources[index];
+          return;
+        }
+
+        finished = true;
+        img.onerror = null;
+      };
+
+      img.src = sources[index];
+    }
+
+    async function render() {
+      let list = [];
+
+      if (currentMode === 'id') list = [...rawData.id];
+      if (currentMode === 'en') list = [...rawData.en];
+      if (currentMode === 'all') list = [...rawData.id, ...rawData.en];
+      if (currentMode === 'special') list = [...rawData.special];
+
+      list = list.filter(item =>
+        typeof item.url === 'string' &&
+        item.url.trim() !== '' &&
+        ambilId(item.url) !== ''
+      );
+
+      const searchQuery = document.getElementById('search').value.toLowerCase().trim();
+
+      if (searchQuery) {
+        list = list.filter(item =>
+          (item.title || '').toLowerCase().includes(searchQuery) ||
+          ambilId(item.url).toLowerCase().includes(searchQuery)
+        );
+      }
+
+      list = seededShuffle(list);
+
+      if (currentMode !== 'all' && currentMode !== 'special' && !searchQuery) {
+        list = list.slice(0, 2);
+      }
+
+      activeData = list;
+
+      const container = document.getElementById('music');
+
+      if (activeData.length === 0) {
+        container.innerHTML = '<div class="status-msg">Tidak ada lagu ditemukan.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+
+      activeData.forEach((item, i) => {
+        const vid = ambilId(item.url);
+        const isSpecial = item.lang === 'special';
+        const availability = isSpecial ? getSpecialAvailability() : null;
+        const card = document.createElement('div');
+
+        card.className = `card${currentVideoId === vid ? ' playing' : ''}${isSpecial ? ' special-card' : ''}`;
+        card.id = `card-${i}`;
+        card.dataset.videoId = vid;
+
+        const player = document.createElement('div');
+        player.className = 'player';
+
+        const thumbnail = document.createElement('img');
+        thumbnail.className = 'thumbnail';
+        thumbnail.alt = 'Thumbnail video';
+        thumbnail.loading = 'lazy';
+        thumbnail.referrerPolicy = 'no-referrer';
+        setThumbnail(thumbnail, vid);
+        player.appendChild(thumbnail);
+
+        const info = document.createElement('div');
+        info.className = 'info';
+
+        const heading = document.createElement('h3');
+        heading.id = `title-${i}`;
+        heading.textContent = item.title || 'Memuat judul...';
+
+        const actionRow = document.createElement('div');
+        actionRow.className = 'action-row';
+
+        const badgeGroup = document.createElement('div');
+        badgeGroup.className = 'badge-group';
+
+        const indexTag = document.createElement('span');
+        indexTag.className = 'index-tag';
+        indexTag.textContent = `#${i + 1}`;
+
+        const badge = document.createElement('span');
+        badge.className = `lang-badge ${item.lang}`;
+        badge.textContent = isSpecial ? 'SPECIAL' : item.lang.toUpperCase();
+
+        badgeGroup.append(indexTag, badge);
+
+        const playButton = document.createElement('button');
+        playButton.type = 'button';
+        playButton.className = `play-btn${isSpecial ? ' special-play' : ''}`;
+
+        if (isSpecial && !availability.allowed) {
+          playButton.classList.add('denied');
+          playButton.textContent = 'Terkunci';
+        } else {
+          playButton.textContent = currentVideoId === vid ? 'Playing' : isSpecial ? '✦ Play' : 'Play';
+        }
+
+        playButton.addEventListener('click', () => play(i, vid));
+
+        actionRow.append(badgeGroup, playButton);
+        info.append(heading, actionRow);
+        card.append(player, info);
+        container.appendChild(card);
+      });
+
+      for (const [i, item] of activeData.entries()) {
+        const vid = ambilId(item.url);
+
+        if (!item.title) {
+          getYouTubeTitle(vid).then(title => {
+            item.title = title;
+
+            if (activeData[i] !== item) return;
+
+            const titleElement = document.getElementById(`title-${i}`);
+
+            if (titleElement) {
+              titleElement.textContent = title;
+            }
+
+            if (currentVideoId === vid) {
+              document.getElementById('floating-info').textContent = title;
+            }
+          });
+        }
+      }
+
+      updateSpecialUI();
+    }
+
+    function play(i, id) {
+      const item = activeData[i];
+
+      if (!item || !id || ambilId(item.url) !== id) return;
+
+      if (item.lang === 'special' && !getSpecialAvailability().allowed) {
+        updateSpecialUI();
+
+        notify({
+          Status: 'warning',
+          Mess: 'Special hanya terbuka pada dua hari acak dalam setiap periode 14 hari.',
+          Label: 'music'
+        });
+
+        return;
+      }
+
+      if (currentVideoId === id && ytPlayer) {
+        if (typeof ytPlayer.playVideo === 'function') {
+          ytPlayer.playVideo();
+        }
+        return;
+      }
+
+      playbackQueue = activeData.map(track => ({ ...track }));
+      playbackQueueIndex = i;
+
+      playQueueTrack(i);
+    }
+
+    function playQueueTrack(index) {
+      if (index < 0 || index >= playbackQueue.length) {
+        notify({
+          Status: 'active',
+          Mess: 'Playlist selesai.',
+          Label: 'music'
+        });
+        return;
+      }
+
+      const item = playbackQueue[index];
+      const id = ambilId(item.url);
+
+      if (!id) {
+        playNextVideo(index);
+        return;
+      }
+
+      if (item.lang === 'special' && !getSpecialAvailability().allowed) {
+        notify({
+          Status: 'warning',
+          Mess: 'Special tidak tersedia hari ini.',
+          Label: 'music'
+        });
+        return;
+      }
+
+      playbackQueueIndex = index;
+      currentVideoId = id;
+
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.toggle('playing', card.dataset.videoId === id);
+      });
+
+      document.querySelectorAll('.play-btn').forEach(button => {
+        button.classList.remove('denied');
+        button.textContent = button.classList.contains('special-play') ? '✦ Play' : 'Play';
+      });
+
+      const selectedCard = document.querySelector(`.card[data-video-id="${id}"]`);
+
+      if (selectedCard) {
+        selectedCard.classList.add('playing');
+
+        const selectedButton = selectedCard.querySelector('.play-btn');
+
+        if (selectedButton) {
+          selectedButton.textContent = 'Playing';
+        }
+      }
+
+      document.getElementById('floating-info').textContent = item.title || 'Memutar musik';
+      document.getElementById('floating-player').classList.add('active');
+
+      pendingVideo = {
+        id,
+        title: item.title || 'Music Player',
+        index
+      };
+
+      if (ytApiReady && window.YT && window.YT.Player) {
+        processPendingVideo();
+      } else {
+        document.getElementById('floating-video').innerHTML =
+          '<div style="width:100%;height:100%;display:grid;place-items:center;color:white;font-size:13px">Memuat pemutar...</div>';
+      }
+
+      updateSpecialUI();
+    }
+
+    function processPendingVideo() {
+      if (!ytApiReady || !window.YT || !window.YT.Player || !pendingVideo) return;
+
+      const pending = pendingVideo;
+      pendingVideo = null;
+      const generation = ++playerGeneration;
+
+      if (ytPlayer) {
+        try {
+          ytPlayer.destroy();
+        } catch (error) {
+          console.error(error);
+        }
+
+        ytPlayer = null;
+      }
+
+      const container = document.getElementById('floating-video');
+      container.innerHTML = '<div id="youtube-player"></div>';
+
+      ytPlayer = new YT.Player('youtube-player', {
+        width: '100%',
+        height: '100%',
+        videoId: pending.id,
+        playerVars: {
+          autoplay: 1,
+          playsinline: 1,
+          rel: 0,
+          enablejsapi: 1
+        },
+        events: {
+          onReady: event => {
+            if (generation !== playerGeneration) return;
+            event.target.playVideo();
+          },
+          onStateChange: event => {
+            if (generation !== playerGeneration) return;
+
+            if (event.data === YT.PlayerState.ENDED) {
+              playNextVideo(pending.index);
+            }
+          },
+          onError: event => {
+            if (generation !== playerGeneration) return;
+
+            notify({
+              Status: 'warning',
+              Mess: `Video YouTube gagal diputar. Kode error: ${event.data}`,
+              Label: 'music'
+            });
+          }
+        }
+      });
+    }
+
+    function playNextVideo(finishedIndex) {
+      if (finishedIndex !== playbackQueueIndex) return;
+
+      const nextIndex = finishedIndex + 1;
+
+      if (nextIndex >= playbackQueue.length) {
+        notify({
+          Status: 'active',
+          Mess: 'Playlist selesai.',
+          Label: 'music'
+        });
+        return;
+      }
+
+      const nextItem = playbackQueue[nextIndex];
+
+      if (nextItem.lang === 'special' && !getSpecialAvailability().allowed) {
+        notify({
+          Status: 'warning',
+          Mess: 'Playlist selesai karena Special tidak tersedia.',
+          Label: 'music'
+        });
+        return;
+      }
+
+      playQueueTrack(nextIndex);
+    }
+
+    function seededShuffle(array) {
+      const result = [...array];
+      const now = new Date();
+
+      let random = Number(
+        `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+      );
+
+      function rand() {
+        random = (random * 9301 + 49297) % 233280;
+        return random / 233280;
+      }
+
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+
+      return result;
+    }
+
+    function ambilId(url) {
+      if (typeof url !== 'string') return '';
+
+      const match = url.match(
+        /(?:youtu\.be\/|youtube\.com\/(?:[^\/?#]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/
+      );
+
+      return match ? match[1] : '';
+    }
+
+    document.getElementById('sizeFloatingButton').addEventListener('click', () => {
+      document.getElementById('floating-player').classList.toggle('is-large');
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTarget = null;
+
+    document.addEventListener('touchstart', event => {
+      if (event.touches.length !== 1) return;
+
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+      touchStartTarget = event.target;
+    }, { passive: true });
+
+    document.addEventListener('touchend', event => {
+      if (!touchStartTarget || event.changedTouches.length !== 1) return;
+
+      const target = touchStartTarget;
+
+      if (target.closest('input, textarea, select, iframe, button')) {
+        touchStartTarget = null;
+        return;
+      }
+
+      const deltaX = event.changedTouches[0].clientX - touchStartX;
+      const deltaY = event.changedTouches[0].clientY - touchStartY;
+
+      if (Math.abs(deltaX) < 65 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) {
+        touchStartTarget = null;
+        return;
+      }
+
+      const modes = ['id', 'en', 'all', 'special'];
+      const currentIndex = modes.indexOf(currentMode);
+
+      if (currentIndex !== -1) {
+        const nextIndex = deltaX < 0
+          ? Math.min(currentIndex + 1, modes.length - 1)
+          : Math.max(currentIndex - 1, 0);
+
+        if (nextIndex !== currentIndex) {
+          changeMode(modes[nextIndex]);
+        }
+      }
+
+      touchStartTarget = null;
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        updateSpecialUI();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
