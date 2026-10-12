@@ -1,40 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Music Player OSIS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f5f5f7;
-      --surface: #fff;
-      --surface-glass: rgba(255,255,255,.85);
-      --border: rgba(0,0,0,.08);
-      --border-hover: rgba(0,0,0,.15);
-      --text-main: #1d1d1f;
-      --text-muted: #86868b;
-      --accent: #0071e3;
-      --accent-hover: #0077ed;
-      --danger: #ff3b30;
-      --shadow-sm: 0 4px 20px rgba(0,0,0,.03);
-      --shadow-hover: 0 16px 40px rgba(0,0,0,.08);
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-glass: rgba(255, 255, 255, 0.85);
+      --border: rgba(226, 232, 240, 0.8);
+      --border-hover: rgba(203, 213, 225, 1);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-glow: rgba(37, 99, 235, 0.15);
+      --danger: #dc2626;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 9999px;
+      --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      --shadow-hover: 0 20px 30px -10px rgba(15, 23, 42, 0.1);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     body {
       background-color: var(--bg);
-      background-image: radial-gradient(circle at 50% 0%, rgba(0,113,227,.04), transparent 60%);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(147, 51, 234, 0.03), transparent 40%);
       color: var(--text-main);
       min-height: 100vh;
-      padding: 60px 20px;
+      padding: 48px 20px 96px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -42,46 +47,55 @@
 
     .wrapper {
       width: 100%;
-      max-width: 980px;
+      max-width: 1100px;
     }
 
     header {
       margin-bottom: 40px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
     h1 {
       font-size: 2.5rem;
-      font-weight: 700;
-      letter-spacing: -.02em;
-      margin-bottom: 6px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--text-main);
     }
 
     .subtitle {
-      font-size: .95rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
+      font-weight: 500;
     }
 
     header > button {
-      margin: 15px;
-      font-size: .95rem;
-      color: #fff;
-      background: var(--text-main);
+      margin-top: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: var(--surface);
+      border: 1px solid var(--border);
       padding: 10px 20px;
-      border: none;
-      border-radius: 0;
-      transition: all .4s ease;
+      border-radius: var(--radius-sm);
+      transition: all 0.25s ease;
       cursor: pointer;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
     }
 
     header > button:hover {
-      border-radius: 20px;
+      border-color: var(--border-hover);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      transform: translateY(-1px);
     }
 
     .control-deck {
       display: flex;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
@@ -91,7 +105,7 @@
       max-width: 100%;
       overflow-x: auto;
       scrollbar-width: none;
-      border-radius: 980px;
+      border-radius: var(--radius-sm);
     }
 
     .tabs-shell::-webkit-scrollbar {
@@ -100,12 +114,12 @@
 
     .tabs {
       display: flex;
-      gap: 3px;
+      gap: 4px;
       width: max-content;
       max-width: 100%;
-      background: rgba(0,0,0,.04);
-      padding: 4px;
-      border-radius: 980px;
+      background: rgba(226, 232, 240, 0.5);
+      padding: 5px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
     }
 
@@ -117,12 +131,12 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 9px 16px;
-      font-size: .82rem;
-      font-weight: 500;
+      padding: 9px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
-      border-radius: 980px;
-      transition: all .3s ease;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
     }
 
     .tab-btn:hover {
@@ -132,52 +146,30 @@
     .tab-btn.active {
       background: var(--surface);
       color: var(--text-main);
-      font-weight: 600;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
     .tab-btn.special-tab {
       color: #9333ea;
     }
 
+    .tab-btn.special-tab.active {
+      background: linear-gradient(135deg, #9333ea, #c084fc);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.25);
+    }
+
     .tab-btn.special-tab.available {
-      box-shadow: 0 0 12px rgba(168,85,247,.2);
-    }
-
-    .tab-btn.special-tab.available::before {
-      content: "";
-      position: absolute;
-      z-index: -2;
-      width: 180%;
-      height: 300%;
-      left: -40%;
-      top: -100%;
-      background: conic-gradient(transparent, transparent 65%, #a855f7, #ec4899, transparent);
-      animation: specialGlow 3s linear infinite;
-    }
-
-    .tab-btn.special-tab.available::after {
-      content: "";
-      position: absolute;
-      inset: 2px;
-      z-index: -1;
-      background: #fff;
-      border-radius: inherit;
+      box-shadow: 0 0 12px rgba(147, 51, 234, 0.2);
     }
 
     .tab-btn.special-tab.unavailable {
-      opacity: .4;
-    }
-
-    @keyframes specialGlow {
-      to {
-        transform: rotate(360deg);
-      }
+      opacity: 0.4;
     }
 
     .search-wrapper {
       flex: 1;
-      max-width: 320px;
+      max-width: 300px;
     }
 
     input[type="text"] {
@@ -186,28 +178,32 @@
       border: 1px solid var(--border);
       color: var(--text-main);
       padding: 11px 18px;
-      font-size: .9rem;
-      border-radius: 980px;
+      font-size: 0.875rem;
+      border-radius: var(--radius-sm);
       outline: none;
-      transition: all .25s ease;
-      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--text-muted);
     }
 
     input[type="text"]:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(0,113,227,.12), var(--shadow-sm);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
     .special-status {
       display: none;
-      margin-bottom: 24px;
-      padding: 14px 18px;
-      background: rgba(255,255,255,.8);
-      border: 1px solid rgba(168,85,247,.16);
-      border-radius: 16px;
+      margin-bottom: 28px;
+      padding: 16px 20px;
+      background: rgba(147, 51, 234, 0.05);
+      border: 1px solid rgba(147, 51, 234, 0.15);
+      border-radius: var(--radius-md);
       color: var(--text-muted);
-      font-size: .8rem;
-      line-height: 1.7;
+      font-size: 0.85rem;
+      line-height: 1.6;
     }
 
     .special-status.visible {
@@ -215,54 +211,52 @@
     }
 
     .special-status strong {
-      color: #9333ea;
+      color: #7e22ce;
     }
 
     #music {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
       gap: 24px;
     }
 
     .card {
       min-width: 0;
-      background: var(--surface-glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: var(--radius-lg);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow-sm);
-      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .card:hover {
-      transform: translateY(-6px);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-hover);
       border-color: var(--border-hover);
     }
 
     .card.playing {
       border: 2px solid var(--accent);
-      box-shadow: 0 0 24px rgba(0,113,227,.2);
+      box-shadow: 0 0 20px var(--accent-glow);
     }
 
     .card.special-card {
-      border-color: rgba(168,85,247,.2);
+      border-color: rgba(147, 51, 234, 0.25);
     }
 
     .card.special-card.playing {
-      border: 2px solid #a855f7;
-      box-shadow: 0 0 24px rgba(168,85,247,.22);
+      border: 2px solid #9333ea;
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
     }
 
     .player {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      background: #e8e8ed;
+      background: #e2e8f0;
       overflow: hidden;
     }
 
@@ -271,19 +265,35 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .card:hover .thumbnail {
+      transform: scale(1.03);
+    }
+
+    .player::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45%;
+      background: linear-gradient(to top, rgba(255, 255, 255, 0.85), transparent);
+      pointer-events: none;
     }
 
     .info {
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
       flex-grow: 1;
       justify-content: space-between;
     }
 
     .info h3 {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       line-height: 1.4;
       color: var(--text-main);
@@ -293,49 +303,60 @@
       overflow: hidden;
     }
 
+    .card-url {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      word-break: break-all;
+      opacity: 0.8;
+      background: #f1f5f9;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
     .action-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      border-top: 1px solid rgba(0,0,0,.05);
+      border-top: 1px solid var(--border);
       padding-top: 14px;
+      margin-top: 2px;
     }
 
     .badge-group {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
     }
 
     .index-tag {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .lang-badge {
-      font-size: .65rem;
+      font-size: 0.65rem;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(0,0,0,.05);
+      background: #f1f5f9;
       color: var(--text-muted);
     }
 
     .lang-badge.id {
-      background: rgba(239,68,68,.1);
+      background: rgba(220, 38, 38, 0.1);
       color: #dc2626;
     }
 
     .lang-badge.en {
-      background: rgba(59,130,246,.1);
+      background: rgba(37, 99, 235, 0.1);
       color: #2563eb;
     }
 
     .lang-badge.special {
-      background: rgba(168,85,247,.12);
+      background: rgba(147, 51, 234, 0.1);
       color: #9333ea;
     }
 
@@ -345,29 +366,30 @@
       border: none;
       color: white;
       padding: 8px 18px;
-      font-size: .85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      border-radius: 980px;
-      transition: background .2s ease, transform .1s ease, box-shadow .2s ease;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
     }
 
     .play-btn:hover {
       background: var(--accent-hover);
-      box-shadow: 0 4px 12px rgba(0,113,227,.3);
+      transform: scale(1.03);
     }
 
     .play-btn:active {
-      transform: scale(.96);
+      transform: scale(0.97);
     }
 
     .play-btn.special-play {
-      background: linear-gradient(110deg, #9333ea, #ec4899);
+      background: linear-gradient(135deg, #9333ea, #c084fc);
     }
 
     .play-btn.denied {
       background: var(--danger);
-      box-shadow: 0 0 12px rgba(255,59,48,.2);
+      opacity: 0.75;
+      cursor: not-allowed;
     }
 
     .status-msg {
@@ -375,37 +397,41 @@
       text-align: center;
       padding: 60px 20px;
       color: var(--text-muted);
-      font-size: .95rem;
+      font-size: 0.95rem;
       background: var(--surface);
-      border-radius: 20px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-card);
     }
 
+    /* FLOATING PLAYER DEFAULT (KECIL) */
     .floating-player {
       position: fixed;
-      top: 18px;
-      right: 18px;
+      top: 24px;
+      right: 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 300px;
-      max-width: calc(100vw - 36px);
-      padding: 5px;
-      background: #ffffff50;
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border-radius: 23px;
+      width: 180px; /* Lebar default pas awal diputar (KECIL) */
+      max-width: calc(100vw - 32px);
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       overflow: hidden;
       z-index: 9999;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(-10px) scale(.94);
-      transition: opacity .28s ease, transform .35s ease, visibility .28s ease, width .4s ease;
+      transform: translateY(-15px) scale(0.95);
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
     }
 
+    /* SAAT DITAMBAHKAN CLASS .is-large (BESAR) */
     .floating-player.is-large {
-      width: 450px;
+      width: 440px; 
     }
 
     .floating-player.active {
@@ -416,27 +442,35 @@
 
     .floating-player button {
       outline: none;
-      border: 1px solid rgba(255,255,255,.4);
-      background: rgba(255,255,255,.3);
-      font-size: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-main);
+      font-size: 14px;
       border-radius: 50%;
-      padding: 8px;
-      text-align: center;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
       cursor: pointer;
-      transition: all .3s ease;
+      transition: all 0.2s ease;
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      z-index: 3;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
     }
 
     .floating-player button:hover {
-      background: rgba(255,255,255,.4);
-      transform: scale(1.07);
+      background: #f1f5f9;
+      transform: scale(1.05);
     }
 
     .floating-video {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      background: rgba(0,0,0,.82);
-      border-radius: 18px;
+      background: #0f172a;
+      border-radius: 8px;
       overflow: hidden;
       z-index: 1;
     }
@@ -453,23 +487,33 @@
       width: 100%;
       position: relative;
       z-index: 2;
-      margin: 4px 3px 0;
-      padding: 9px 10px 7px;
-      color: rgba(20,20,25,.82);
-      font-size: .72rem;
+      padding: 6px 32px 2px 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .floating-title {
+      color: var(--text-main);
+      font-size: 0.72rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    .floating-url {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.8;
+    }
+
     @media (max-width: 640px) {
       body {
-        padding: 36px 14px;
-      }
-
-      header {
-        margin-bottom: 28px;
+        padding: 24px 12px 90px;
       }
 
       h1 {
@@ -491,8 +535,8 @@
       }
 
       .tab-btn {
-        padding: 10px 12px;
-        font-size: .75rem;
+        padding: 8px 16px;
+        font-size: 0.8rem;
       }
 
       .search-wrapper {
@@ -503,26 +547,15 @@
         grid-template-columns: minmax(0, 1fr);
       }
 
+      /* PERBAIKAN HP: Tetap ikuti mode kecil/besar & tidak dipaksa full width lagi */
       .floating-player {
-        top: 12px;
-        right: 12px;
-        width: 228px;
-        max-width: calc(100vw - 24px);
-        padding: 4px;
-        border-radius: 19px;
+        top: 16px;
+        right: 16px;
+        left: auto;
       }
 
       .floating-player.is-large {
-        width: min(450px, calc(100vw - 24px));
-      }
-
-      .floating-video {
-        border-radius: 15px;
-      }
-
-      .floating-info {
-        font-size: .65rem;
-        padding: 7px 8px 6px;
+        width: calc(100vw - 32px); /* Pas membesar di HP menyesuaikan lebar layar */
       }
     }
   </style>
@@ -530,7 +563,10 @@
 <body>
   <div id="floating-player" class="floating-player">
     <div id="floating-video" class="floating-video"></div>
-    <div id="floating-info" class="floating-info">Tidak ada musik yang diputar.</div>
+    <div class="floating-info">
+      <div id="floating-title" class="floating-title">Tidak ada musik yang diputar.</div>
+      <p id="floating-url" class="floating-url">-</p>
+    </div>
     <button id="sizeFloatingButton" type="button" aria-label="Ubah ukuran pemutar">⤢</button>
   </div>
 
@@ -563,6 +599,7 @@
     </section>
   </div>
 
+  <script src="https://lib.lycaxia.web.id/notification/script.js"></script>
   <script>
     const SPECIAL_PERIOD = 14 * 24 * 60 * 60 * 1000;
     const SPECIAL_STORAGE_KEY = 'osis-special-schedule-v2';
@@ -807,7 +844,7 @@
         console.error(error);
 
         document.getElementById('music').innerHTML = `
-          <div class="status-msg" style="color:#ff3b30;">
+          <div class="status-msg" style="color:#dc2626;">
             Gagal memuat playlist. Periksa playlist-id.json, playlist-en.json, dan special.json.
           </div>
         `;
@@ -973,6 +1010,10 @@
         heading.id = `title-${i}`;
         heading.textContent = item.title || 'Memuat judul...';
 
+        const urlParam = document.createElement('p');
+        urlParam.className = 'card-url';
+        urlParam.textContent = item.url;
+
         const actionRow = document.createElement('div');
         actionRow.className = 'action-row';
 
@@ -1003,7 +1044,7 @@
         playButton.addEventListener('click', () => play(i, vid));
 
         actionRow.append(badgeGroup, playButton);
-        info.append(heading, actionRow);
+        info.append(heading, urlParam, actionRow);
         card.append(player, info);
         container.appendChild(card);
       });
@@ -1024,7 +1065,7 @@
             }
 
             if (currentVideoId === vid) {
-              document.getElementById('floating-info').textContent = title;
+              document.getElementById('floating-title').textContent = title;
             }
           });
         }
@@ -1114,7 +1155,8 @@
         }
       }
 
-      document.getElementById('floating-info').textContent = item.title || 'Memutar musik';
+      document.getElementById('floating-title').textContent = item.title || 'Memutar musik';
+      document.getElementById('floating-url').textContent = item.url || '';
       document.getElementById('floating-player').classList.add('active');
 
       pendingVideo = {
@@ -1247,8 +1289,11 @@
       return match ? match[1] : '';
     }
 
-    document.getElementById('sizeFloatingButton').addEventListener('click', () => {
-      document.getElementById('floating-player').classList.toggle('is-large');
+    document.getElementById('sizeFloatingButton').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const player = document.getElementById('floating-player');
+      player.classList.toggle('is-large');
+      document.getElementById('sizeFloatingButton').textContent = player.classList.contains('is-large') ? '⤡' : '⤢';
     });
 
     let touchStartX = 0;
